@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(primer.data)
 library(tidyverse)
 library(rstanarm)
+library(tidybayes)
 
 # Check out the raw cces tibble, especially the faminc (family income) and
 # ideology variables.
@@ -109,5 +110,23 @@ faminc <- c(1,6,12)
 
 newobs <- expand_grid(age, race, gender, faminc)
 
+```
+
+```{r}
+x <- add_fitted_draws(newobs, fit_3) %>%
+  mutate(faminc = factor(faminc, levels = c(1,6,12)))
+
+x
+```
+```{r}
+library(ggdist)
+x %>%
+  ggplot(aes(x = .value, y = faminc, fill = gender)) + 
+  stat_slab(alpha = 0.5) + 
+  labs(title = "Ideology versus Income and Gender",
+       subtitle = "Women's ideology varies much more across family incomes",
+       x = "Expected Ideology",
+       y = "Family Income Category",
+       caption = "Source: CCES")
 ```
 
