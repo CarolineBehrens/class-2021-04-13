@@ -29,10 +29,24 @@ x <- cces %>%
   
   mutate(faminc = as.integer(faminc)) %>% 
   mutate(ideology = as.integer(ideology))
+```
+
+
+```{r setup, include=FALSE}
+plot_1<- x %>%
+  ggplot(aes(x = faminc, y = ideology)) +
+  geom_jitter(alpha = 0.5) + 
+  geom_smooth(formula = y ~ x,
+              method = "lm")
+
+
 
   
 ```
 
+```{r}
+plot_1
+```
 
 *Describe the relationship between ideology and family income. How does it vary by gender? Does your conclusion change if we "adjust" for race and age?*
 
@@ -41,10 +55,59 @@ x <- cces %>%
 
 
 ## Justice
+$y_i = \beta_0 + \beta_1x + \varepsilon_i$
+$ideology_i=\beta_0 + \beta_1faminc_i + \varepsilon_i$
 
+-higher the family income, the lower the ideology score(more liberal)
 
 ## Courage
+```{r}
+fit_1 <- stan_glm(data = x,
+                  formula = ideology ~ faminc,
+                  refresh = 0)
+fit_1
+print(fit_1, digits = 3)
+```
+beta_0 = intercept, when income is zero, ideology is 3.471(slightly left of center)
+3.471 is the median of the pposterior distribution, 95% confidence interval is between +/- .05
 
+
+beta_1 = slope = for every one unit increase in income(income bin of $10k), we would expect 
+ideology to decrease slightly(.047 more liberal)
+**CAUSAL claim- if we change a person's family income then their ideology will change. that's manipulation
+
+when comparing two families that are all-else-equal we would expect the richer family to be more liberal than the poorer family by a margin og -0.047
+
+$$ideology_i = \beta_0 + \beta_1 faminc + \beta_2 gender + \beta_3 faminc+gender +
+\epsilon_i$$
+```{r}
+fit_2 <- stan_glm(data = x,
+                  formula = ideology ~ famin + gender + faminc*gender,
+                  refresh = 0,
+                  seed = 220)
+
+print(fit_2, details = FALSE, digits = 3)
+```
+-intercept = female and when age equals 0 
+
+
+```{r}
+fit_3 <- stan_glm(data = x,
+                  ideology ~ age + race + gender + faminc + gender*faminc,
+                  refresh = 0,
+                  seed = 220)
+
+print(fit_3, digits = 3)
+```
 
 ## Temperance
+```{r}
+age <- 50
+race <- "White"
+gender <- c("Male", "Female") 
+faminc <- c(1,6,12)
+
+newobs <- expand_grid(age, race, gender, faminc)
+
+```
 
